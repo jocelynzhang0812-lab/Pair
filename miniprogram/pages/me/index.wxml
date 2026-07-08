@@ -1,0 +1,51 @@
+<view class="screen with-tab">
+  <view class="profile-hero">
+    <image class="profile-avatar-png large" src="/assets/prototype/person-sarah.png" mode="aspectFit"></image>
+    <text class="title small">{{profile.name}}</text>
+    <text class="subtitle">{{profile.headline}}</text>
+    <view class="chip-row">
+      <text wx:for="{{profile.tags}}" wx:key="*this" class="chip selected">#{{item}}</text>
+    </view>
+  </view>
+
+  <view class="card public-card">
+    <text class="row-title">公开档案页</text>
+    <block wx:if="{{publicProfilePublished}}">
+      <text class="row-subtitle">pair.app/u/jingfei · 可分享给想认识你的人</text>
+      <text class="status-pill completed">已发布</text>
+      <button class="secondary-button" bindtap="previewProfile">预览公开页</button>
+    </block>
+    <block wx:else>
+      <text class="row-subtitle">还没有发布。发布后，别人可以先看你的公开档案，再决定是否让 Agent 对齐。</text>
+      <text class="status-pill">未发布</text>
+      <button class="primary-button" bindtap="publishProfile">发布公开档案</button>
+      <button class="secondary-button" bindtap="previewProfile">先预览</button>
+    </block>
+  </view>
+
+  <view class="list">
+    <view wx:for="{{settings}}" wx:key="*this" class="setting-row" bindtap="openSettings">
+      <text>{{item}}</text>
+      <text class="muted">›</text>
+    </view>
+  </view>
+
+  <view class="bottom-nav">
+    <navigator class="tab-item" url="/pages/today/index" open-type="reLaunch">
+      <image class="tab-icon" src="/assets/prototype/tab-today.png" mode="aspectFit"></image>
+      <text class="tab-label">Today</text>
+    </navigator>
+    <navigator class="tab-item" url="/pages/people/index" open-type="reLaunch">
+      <image class="tab-icon" src="/assets/prototype/tab-people.png" mode="aspectFit"></image>
+      <text class="tab-label">People</text>
+    </navigator>
+    <navigator class="tab-item" url="/pages/chats/index" open-type="reLaunch">
+      <image class="tab-icon" src="/assets/prototype/tab-chats.png" mode="aspectFit"></image>
+      <text class="tab-label">Chats</text>
+    </navigator>
+    <navigator class="tab-item active" url="/pages/me/index" open-type="reLaunch">
+      <image class="tab-icon" src="/assets/prototype/tab-me.png" mode="aspectFit"></image>
+      <text class="tab-label">Me</text>
+    </navigator>
+  </view>
+</view>

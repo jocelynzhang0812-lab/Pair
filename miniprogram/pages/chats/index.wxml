@@ -1,0 +1,68 @@
+<view class="screen with-tab">
+  <text class="title small">Chats</text>
+  <text class="subtitle">看看你的 Pair 聊了什么</text>
+
+  <view wx:if="{{pageState === 'loading'}}" class="state-panel card">
+    <view class="state-visual">
+      <view class="agent-dot thinking"></view>
+    </view>
+    <text class="state-title">正在读取 Agent 对话记录</text>
+    <text class="state-copy">这里只放 Agent 和 Agent 先谈过的记录，不做普通聊天流。</text>
+  </view>
+
+  <view wx:elif="{{pageState === 'empty'}}" class="state-panel card">
+    <view class="state-visual">
+      <image class="state-icon-png" src="/assets/prototype/tab-chats.png" mode="aspectFit"></image>
+    </view>
+    <text class="state-title">还没有 A2A 记录</text>
+    <text class="state-copy">从 Today 发出邀请后，Agent 对齐会出现在这里。</text>
+    <view class="state-actions">
+      <button class="primary-button" bindtap="goToday">去 Today 发出一张卡</button>
+    </view>
+  </view>
+
+  <view wx:elif="{{pageState === 'error' || pageState === 'failed'}}" class="state-panel card">
+    <view class="state-visual">
+      <view class="agent-dot"></view>
+    </view>
+    <text class="state-title">对话记录暂时没加载出来</text>
+    <text class="state-copy">你可以重试，或先回 Today 继续看下一位推荐。</text>
+    <view class="state-actions">
+      <button class="primary-button" bindtap="retryChats">重试</button>
+      <button class="secondary-button" bindtap="goToday">返回 Today</button>
+    </view>
+  </view>
+
+  <view wx:else class="list">
+    <view wx:for="{{chats}}" wx:key="id" class="card chat-card" data-id="{{item.id}}" data-session="{{item.sessionId}}" data-summary="{{item.summaryId}}" bindtap="openChat">
+      <view class="row">
+        <image class="chat-icon-png" src="/assets/prototype/tab-chats.png" mode="aspectFit"></image>
+        <view class="row-body">
+          <text class="row-title">{{item.title}}</text>
+          <text class="row-subtitle">{{item.subtitle}}</text>
+          <text class="status-pill {{item.state}}">{{item.stateLabel}}</text>
+          <text class="chat-detail serif">{{item.detail}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="bottom-nav">
+    <navigator class="tab-item" url="/pages/today/index" open-type="reLaunch">
+      <image class="tab-icon" src="/assets/prototype/tab-today.png" mode="aspectFit"></image>
+      <text class="tab-label">Today</text>
+    </navigator>
+    <navigator class="tab-item" url="/pages/people/index" open-type="reLaunch">
+      <image class="tab-icon" src="/assets/prototype/tab-people.png" mode="aspectFit"></image>
+      <text class="tab-label">People</text>
+    </navigator>
+    <navigator class="tab-item active" url="/pages/chats/index" open-type="reLaunch">
+      <image class="tab-icon" src="/assets/prototype/tab-chats.png" mode="aspectFit"></image>
+      <text class="tab-label">Chats</text>
+    </navigator>
+    <navigator class="tab-item" url="/pages/me/index" open-type="reLaunch">
+      <image class="tab-icon" src="/assets/prototype/tab-me.png" mode="aspectFit"></image>
+      <text class="tab-label">Me</text>
+    </navigator>
+  </view>
+</view>

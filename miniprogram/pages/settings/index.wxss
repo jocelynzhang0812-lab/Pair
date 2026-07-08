@@ -1,0 +1,35 @@
+.settings-title {
+  display: block;
+  margin-top: var(--pair-space-xl);
+}
+
+.settings-list {
+  margin-top: var(--pair-section-gap);
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 116rpx;
+  border-bottom: 2rpx solid var(--pair-border-subtle);
+  font-family: var(--pair-font-serif);
+  font-size: var(--pair-row-title-size);
+}
+
+.setting-left {
+  display: flex;
+  align-items: center;
+  gap: var(--pair-space-xl);
+}
+
+.setting-icon-png {
+  width: 58rpx;
+  height: 58rpx;
+  flex: none;
+}
+
+.logout {
+  margin-top: var(--pair-section-gap);
+  color: var(--pair-danger);
+}

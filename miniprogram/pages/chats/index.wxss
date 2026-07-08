@@ -1,0 +1,17 @@
+.chat-card {
+  margin-top: 0;
+}
+
+.chat-icon-png {
+  width: 88rpx;
+  height: 88rpx;
+  flex: none;
+}
+
+.chat-detail {
+  display: block;
+  margin-top: var(--pair-space-md);
+  color: var(--pair-fg-primary);
+  font-size: var(--pair-caption-size);
+  line-height: 1.5;
+}

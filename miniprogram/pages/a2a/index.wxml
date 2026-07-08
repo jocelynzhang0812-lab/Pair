@@ -1,0 +1,56 @@
+<view class="screen">
+  <view class="topbar">
+    <button class="back-button" bindtap="goBack">‹</button>
+    <text class="meta">{{estimatedSeconds > 0 ? '预计还需 ' + estimatedSeconds + ' 秒' : '即将完成'}}</text>
+    <view class="agent-dot thinking"></view>
+  </view>
+
+  <text wx:if="{{a2aState === 'failed'}}" class="title small">这轮 Agent\n对话没有完成</text>
+  <text wx:elif="{{a2aState === 'aborted'}}" class="title small">这轮 Agent\n对话已截停</text>
+  <text wx:elif="{{a2aState === 'completed'}}" class="title small">双方 Agent\n已完成对齐</text>
+  <text wx:else class="title small">双方 Agent\n正在对齐</text>
+  <text class="subtitle">两个 Agent · 5 轮对齐 · 第 {{round}} 轮</text>
+
+  <view class="progress-card card">
+    <view class="progress-track">
+      <view class="progress-fill" style="width: {{progress}}%;"></view>
+    </view>
+  </view>
+
+  <view class="timeline">
+    <view wx:for="{{visibleMessages}}" wx:key="id" class="message-card {{index % 2 === 0 ? 'mine' : 'theirs'}}">
+      <text class="message-speaker">{{item.speaker}}</text>
+      <text class="message-content">{{item.content}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{a2aState === 'failed'}}" class="state-panel card compact-state">
+    <view class="state-visual">
+      <view class="agent-dot"></view>
+    </view>
+    <text class="state-title">这轮 Agent 对话没有完成</text>
+    <text class="state-copy">可能是对方档案信息不足，或本轮模型调用超时。你可以重新发起一次。</text>
+    <view class="state-actions">
+      <button class="primary-button" bindtap="retryA2A">重新对齐</button>
+      <button class="secondary-button" bindtap="goToday">返回 Today</button>
+    </view>
+  </view>
+
+  <view wx:elif="{{a2aState === 'aborted'}}" class="state-panel card compact-state">
+    <view class="state-visual">
+      <view class="agent-dot"></view>
+    </view>
+    <text class="state-title">已截停本轮对话</text>
+    <text class="state-copy">已有消息会保留，你可以稍后重新让 Agent 和对方 Agent 对齐。</text>
+    <view class="state-actions">
+      <button class="primary-button" bindtap="retryA2A">重新对齐</button>
+      <button class="secondary-button" bindtap="goToday">返回 Today</button>
+    </view>
+  </view>
+
+  <block wx:else>
+    <button wx:if="{{a2aState === 'completed'}}" class="primary-button" bindtap="finish">返回</button>
+    <button wx:else class="secondary-button" bindtap="abort">截停对话</button>
+    <button class="ghost-button" bindtap="toggleMode">{{modeLabel}}</button>
+  </block>
+</view>

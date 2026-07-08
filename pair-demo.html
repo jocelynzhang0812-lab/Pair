@@ -1,0 +1,1121 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pair Demo Prototype</title>
+    <style>
+      :root {
+        --bg-base: #fbfaf7;
+        --bg-raised: #ffffff;
+        --bg-sunken: #f4f2ec;
+        --fg-primary: #1a1816;
+        --fg-secondary: #5c5852;
+        --fg-tertiary: #8b857c;
+        --fg-inverse: #ffffff;
+        --border-subtle: #ede9e0;
+        --border-default: #d9d2c8;
+        --accent: #c68b5c;
+        --accent-dark: #8f6240;
+        --accent-soft: #f5e8d8;
+        --shadow-card: 0 16px 40px rgba(42, 32, 24, 0.08);
+        --shadow-fab: 0 18px 34px rgba(0, 0, 0, 0.26);
+        --serif: "Times New Roman", "Songti SC", "SimSun", serif;
+        --sans: Inter, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 12% 18%, var(--accent-soft), transparent 26%),
+          var(--bg-base);
+        color: var(--fg-primary);
+        font-family: var(--sans);
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .demo {
+        display: grid;
+        grid-template-columns: minmax(280px, 380px) minmax(393px, 430px) minmax(300px, 390px);
+        gap: 34px;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 32px;
+      }
+
+      .intro,
+      .logic {
+        align-self: stretch;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        color: var(--fg-secondary);
+        font-size: 13px;
+      }
+
+      .intro h1 {
+        margin: 0;
+        font-family: var(--serif);
+        font-size: 42px;
+        line-height: 1.12;
+        letter-spacing: 0;
+      }
+
+      .intro p {
+        margin: 18px 0 0;
+        color: var(--fg-secondary);
+        font-family: var(--serif);
+        font-size: 18px;
+        line-height: 1.7;
+      }
+
+      .quick-jump {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 22px;
+      }
+
+      .quick-jump button {
+        border: 1px solid var(--border-default);
+        border-radius: 999px;
+        padding: 7px 12px;
+        background: rgba(255, 255, 255, 0.68);
+        color: var(--fg-secondary);
+        font-size: 13px;
+      }
+
+      .quick-jump button.active {
+        background: var(--fg-primary);
+        color: var(--fg-inverse);
+      }
+
+      .phone {
+        position: relative;
+        width: min(100%, 393px);
+        height: 852px;
+        overflow: hidden;
+        border: 1px solid var(--border-default);
+        border-radius: 34px;
+        background: var(--bg-raised);
+        box-shadow: var(--shadow-card);
+      }
+
+      .status-bar {
+        position: absolute;
+        z-index: 20;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: space-between;
+        height: 50px;
+        padding: 18px 34px 0;
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .status-icons {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .signal {
+        display: inline-flex;
+        align-items: flex-end;
+        gap: 2px;
+        height: 12px;
+      }
+
+      .signal i {
+        display: block;
+        width: 3px;
+        border-radius: 2px;
+        background: var(--fg-primary);
+      }
+
+      .signal i:nth-child(1) {
+        height: 5px;
+      }
+
+      .signal i:nth-child(2) {
+        height: 8px;
+      }
+
+      .signal i:nth-child(3) {
+        height: 11px;
+      }
+
+      .wifi {
+        width: 15px;
+        height: 11px;
+        border: 3px solid var(--fg-primary);
+        border-left-color: transparent;
+        border-bottom-color: transparent;
+        border-radius: 3px;
+        transform: rotate(-45deg);
+      }
+
+      .battery {
+        position: relative;
+        width: 22px;
+        height: 11px;
+        border: 2px solid var(--fg-primary);
+        border-radius: 3px;
+        background: var(--fg-primary);
+      }
+
+      .battery::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        right: -5px;
+        width: 3px;
+        height: 5px;
+        border-radius: 0 2px 2px 0;
+        background: var(--fg-primary);
+      }
+
+      .screen {
+        position: absolute;
+        inset: 0;
+        display: none;
+        overflow-y: auto;
+        padding: 70px 32px 92px;
+        background: var(--bg-raised);
+        scrollbar-width: none;
+      }
+
+      .screen::-webkit-scrollbar {
+        display: none;
+      }
+
+      .screen.active {
+        display: block;
+      }
+
+      .screen.center {
+        display: none;
+        place-items: center;
+        text-align: center;
+      }
+
+      .screen.center.active {
+        display: grid;
+      }
+
+      h2 {
+        margin: 0;
+        font-family: var(--serif);
+        font-size: 42px;
+        line-height: 1.16;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        margin: 0;
+        font-family: var(--serif);
+        font-size: 25px;
+        line-height: 1.2;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      .lead {
+        margin-top: 24px;
+        color: var(--fg-secondary);
+        font-family: var(--serif);
+        font-size: 22px;
+        line-height: 1.65;
+      }
+
+      .btn {
+        width: 100%;
+        min-height: 58px;
+        border: 1px solid transparent;
+        border-radius: 16px;
+        background: var(--fg-primary);
+        color: var(--fg-inverse);
+        font-family: var(--serif);
+        font-size: 24px;
+        font-weight: 800;
+      }
+
+      .btn.secondary {
+        background: var(--bg-raised);
+        color: var(--fg-primary);
+        border-color: var(--border-default);
+      }
+
+      .text-link {
+        border: 0;
+        background: transparent;
+        color: var(--fg-secondary);
+        font-family: var(--serif);
+        font-size: 18px;
+      }
+
+      .jump-note {
+        display: block;
+        margin-top: 8px;
+        color: var(--fg-tertiary);
+        font-size: 11px;
+        text-align: center;
+      }
+
+      .agent-dot {
+        display: inline-grid;
+        place-items: center;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 36% 30%, rgba(255, 255, 255, 0.38), transparent 28%),
+          linear-gradient(135deg, var(--accent), var(--accent-dark));
+        box-shadow: 0 18px 32px rgba(143, 98, 64, 0.24);
+      }
+
+      .agent-dot.small {
+        width: 14px;
+        height: 14px;
+        box-shadow: 0 0 0 7px rgba(198, 139, 92, 0.16);
+      }
+
+      .line-art {
+        width: 100%;
+        color: var(--fg-primary);
+      }
+
+      .hero-art {
+        margin: 72px 0 58px;
+      }
+
+      .login-title {
+        margin-top: 160px;
+      }
+
+      .login-copy {
+        margin: 28px 0 116px;
+        color: var(--fg-secondary);
+        font-family: var(--serif);
+        font-size: 25px;
+        line-height: 1.5;
+      }
+
+      .button-stack {
+        display: grid;
+        gap: 16px;
+      }
+
+      .source-input {
+        display: grid;
+        place-items: center start;
+        min-height: 112px;
+        margin-top: 52px;
+        border: 1px solid var(--border-default);
+        border-radius: 18px;
+        padding: 0 22px;
+        color: var(--fg-tertiary);
+        font-family: var(--serif);
+        font-size: 24px;
+        line-height: 1.6;
+      }
+
+      .source-art {
+        margin: 68px 0;
+      }
+
+      .option-list {
+        display: grid;
+        gap: 16px;
+        margin: 58px 0 52px;
+      }
+
+      .option {
+        position: relative;
+        display: grid;
+        align-content: center;
+        min-height: 104px;
+        border: 1px solid var(--border-default);
+        border-radius: 18px;
+        padding: 18px 22px 18px 74px;
+        background: var(--bg-raised);
+        color: var(--fg-primary);
+        text-align: left;
+      }
+
+      .option::before {
+        content: "";
+        position: absolute;
+        left: 26px;
+        top: 34px;
+        width: 23px;
+        height: 23px;
+        border: 1.5px solid currentColor;
+        border-radius: 50%;
+        background: var(--bg-raised);
+      }
+
+      .option.selected {
+        background: var(--fg-primary);
+        color: var(--fg-inverse);
+      }
+
+      .option.selected::before {
+        border: 10px solid var(--bg-raised);
+        background: var(--accent);
+      }
+
+      .option strong {
+        font-family: var(--serif);
+        font-size: 28px;
+      }
+
+      .option span {
+        margin-top: 8px;
+        color: currentColor;
+        opacity: 0.78;
+        font-size: 17px;
+      }
+
+      .empty-hero {
+        margin: 88px auto 52px;
+        text-align: center;
+      }
+
+      .empty-title {
+        text-align: center;
+        font-size: 36px;
+      }
+
+      .empty-copy {
+        margin-top: 46px;
+        color: var(--fg-secondary);
+        font-family: var(--serif);
+        font-size: 22px;
+        line-height: 1.8;
+        text-align: center;
+      }
+
+      .fab {
+        display: grid;
+        place-items: center;
+        width: 74px;
+        height: 74px;
+        margin: 70px auto 0;
+        border: 0;
+        border-radius: 50%;
+        background: var(--fg-primary);
+        color: var(--fg-inverse);
+        box-shadow: var(--shadow-fab);
+        font-size: 52px;
+        line-height: 1;
+      }
+
+      .app-title {
+        margin-bottom: 30px;
+        font-size: 36px;
+      }
+
+      .today-card {
+        display: grid;
+        gap: 14px;
+        border: 1px solid var(--border-subtle);
+        border-radius: 18px;
+        padding: 20px;
+        background: var(--bg-raised);
+        box-shadow: var(--shadow-card);
+      }
+
+      .today-card .top {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .avatar {
+        display: grid;
+        place-items: center;
+        width: 68px;
+        height: 68px;
+        color: var(--fg-primary);
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .tag {
+        border: 1px solid var(--border-subtle);
+        border-radius: 999px;
+        padding: 5px 9px;
+        color: var(--fg-secondary);
+        font-size: 12px;
+      }
+
+      .score {
+        display: flex;
+        justify-content: space-between;
+        color: var(--fg-secondary);
+        font-size: 13px;
+      }
+
+      .score i {
+        width: 70%;
+        height: 7px;
+        border-radius: 999px;
+        background: var(--bg-sunken);
+      }
+
+      .score i::after {
+        content: "";
+        display: block;
+        width: 82%;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--fg-primary);
+      }
+
+      .segment {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        overflow: hidden;
+        border: 1px solid var(--border-default);
+        border-radius: 14px;
+        margin-bottom: 28px;
+      }
+
+      .segment button {
+        position: relative;
+        min-height: 55px;
+        border: 0;
+        background: transparent;
+        color: var(--fg-tertiary);
+        font-family: var(--serif);
+        font-size: 23px;
+        font-weight: 700;
+      }
+
+      .segment button + button {
+        border-left: 1px solid var(--border-subtle);
+      }
+
+      .segment .active-seg {
+        color: var(--fg-primary);
+      }
+
+      .segment .active-seg::after {
+        content: "";
+        position: absolute;
+        left: 22px;
+        right: 22px;
+        bottom: 0;
+        height: 3px;
+        border-radius: 999px;
+        background: var(--accent-dark);
+      }
+
+      .person-list,
+      .chat-list,
+      .settings-list {
+        display: grid;
+        gap: 18px;
+      }
+
+      .person,
+      .chat,
+      .setting {
+        display: grid;
+        grid-template-columns: 82px 1fr;
+        align-items: center;
+        min-height: 100px;
+        border: 1px solid var(--border-subtle);
+        border-radius: 18px;
+        padding: 14px 18px;
+        background: var(--bg-raised);
+        color: var(--fg-primary);
+        text-align: left;
+      }
+
+      .chat,
+      .setting {
+        grid-template-columns: 42px 1fr 20px;
+      }
+
+      .person strong,
+      .chat strong,
+      .setting strong {
+        display: block;
+        font-family: var(--serif);
+        font-size: 24px;
+        line-height: 1.18;
+      }
+
+      .person span,
+      .chat span,
+      .setting span {
+        color: var(--fg-secondary);
+        font-family: var(--serif);
+        font-size: 16px;
+      }
+
+      .profile-card {
+        display: grid;
+        justify-items: center;
+        gap: 12px;
+        border: 1px solid var(--border-subtle);
+        border-radius: 22px;
+        padding: 26px 20px;
+        text-align: center;
+        box-shadow: var(--shadow-card);
+      }
+
+      .profile-card h2 {
+        font-size: 36px;
+      }
+
+      .profile-card p {
+        color: var(--fg-secondary);
+        font-family: var(--serif);
+        font-size: 18px;
+      }
+
+      .bio-box {
+        margin-top: 18px;
+        border: 1px solid var(--border-subtle);
+        border-radius: 18px;
+        padding: 18px;
+        color: var(--fg-secondary);
+        font-size: 15px;
+        line-height: 1.7;
+      }
+
+      .dialogue {
+        display: grid;
+        gap: 13px;
+      }
+
+      .bubble {
+        max-width: 88%;
+        border-radius: 18px;
+        padding: 13px 15px;
+        font-size: 14px;
+        line-height: 1.55;
+      }
+
+      .bubble.agent {
+        background: var(--accent-soft);
+        font-family: var(--serif);
+      }
+
+      .bubble.user {
+        justify-self: end;
+        background: var(--fg-primary);
+        color: var(--fg-inverse);
+      }
+
+      .summary-card {
+        display: grid;
+        gap: 16px;
+        border: 1px solid var(--border-subtle);
+        border-radius: 22px;
+        padding: 20px;
+        box-shadow: var(--shadow-card);
+      }
+
+      .summary-card h3 {
+        font-size: 30px;
+      }
+
+      .metric {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--fg-secondary);
+      }
+
+      .metric strong {
+        color: var(--fg-primary);
+        font-family: var(--serif);
+        font-size: 30px;
+      }
+
+      .settings-title {
+        margin-bottom: 48px;
+        font-family: var(--serif);
+        font-size: 46px;
+      }
+
+      .setting {
+        min-height: 74px;
+        border-width: 0 0 1px;
+        border-radius: 0;
+        padding: 10px 0;
+      }
+
+      .logout {
+        margin-top: 68px;
+        color: #d83b35;
+        text-align: center;
+        font-family: var(--serif);
+        font-size: 26px;
+      }
+
+      .error-art {
+        margin: 0 auto 52px;
+        width: 210px;
+      }
+
+      .error-title {
+        font-size: 34px;
+      }
+
+      .error-copy {
+        margin: 12px 0 64px;
+        color: var(--fg-tertiary);
+        font-size: 22px;
+      }
+
+      .bottom-nav {
+        position: absolute;
+        z-index: 18;
+        left: 28px;
+        right: 28px;
+        bottom: 18px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        min-height: 56px;
+        background: linear-gradient(to top, var(--bg-raised) 74%, transparent);
+      }
+
+      .bottom-nav button {
+        display: grid;
+        place-items: center;
+        gap: 3px;
+        border: 0;
+        background: transparent;
+        color: var(--fg-secondary);
+        font-family: var(--serif);
+        font-size: 13px;
+      }
+
+      .bottom-nav button.active {
+        color: var(--fg-primary);
+        font-weight: 800;
+      }
+
+      .icon {
+        width: 22px;
+        height: 22px;
+      }
+
+      .logic-card {
+        border: 1px solid var(--border-subtle);
+        border-radius: 22px;
+        padding: 22px;
+        background: rgba(255, 255, 255, 0.72);
+        box-shadow: var(--shadow-card);
+      }
+
+      .logic-card h2 {
+        font-size: 28px;
+      }
+
+      .logic-card p {
+        margin-top: 12px;
+        color: var(--fg-secondary);
+        line-height: 1.65;
+      }
+
+      .logic-card ol {
+        margin: 18px 0 0;
+        padding-left: 20px;
+        color: var(--fg-secondary);
+        line-height: 1.8;
+      }
+
+      .logic-card li.active {
+        color: var(--fg-primary);
+        font-weight: 700;
+      }
+
+      .logic-detail {
+        margin-top: 18px;
+        border-radius: 16px;
+        padding: 14px;
+        background: var(--bg-sunken);
+        color: var(--fg-secondary);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      @media (max-width: 1080px) {
+        .demo {
+          grid-template-columns: 1fr;
+        }
+
+        .intro,
+        .logic {
+          max-width: 680px;
+          margin: 0 auto;
+        }
+
+        .phone {
+          margin: 0 auto;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .demo {
+          padding: 14px;
+        }
+
+        .phone {
+          height: 820px;
+        }
+
+        .screen {
+          padding-left: 26px;
+          padding-right: 26px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="demo">
+      <section class="intro">
+        <p class="eyebrow">Pair · clickable demo html</p>
+        <h1>根据原型图做的<br />单文件 Demo</h1>
+        <p>
+          左侧按钮可以快速跳页，手机内按钮也能跳转。右侧会随当前页面更新跳转说明，
+          用来标注产品流程和页面关系。
+        </p>
+        <div class="quick-jump" aria-label="快速跳转">
+          <button data-go="login">登录</button>
+          <button data-go="source">读资料</button>
+          <button data-go="objectives">目标</button>
+          <button data-go="today-empty">空状态</button>
+          <button data-go="today">Today</button>
+          <button data-go="people">People</button>
+          <button data-go="chats">Chats</button>
+          <button data-go="me">Settings</button>
+          <button data-go="error">错误页</button>
+        </div>
+      </section>
+
+      <section class="phone" aria-label="Pair app demo">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span class="status-icons" aria-hidden="true">
+            <span class="signal"><i></i><i></i><i></i></span>
+            <span class="wifi"></span>
+            <span class="battery"></span>
+          </span>
+        </div>
+
+        <section class="screen active" data-screen="login">
+          <h2 class="login-title">每个职场人<br />都有一个 Agent</h2>
+          <p class="login-copy">帮你跑腿人、破冰、初步球养</p>
+          <svg class="line-art hero-art" viewBox="0 0 330 150" aria-hidden="true">
+            <circle cx="70" cy="72" r="30" fill="url(#dotLogin)" />
+            <path d="M118 75 C165 38 210 130 278 50" fill="none" stroke="currentColor" stroke-width="2.2" stroke-dasharray="8 8" />
+            <path d="M278 50 L268 54 L274 62 Z" fill="currentColor" />
+            <defs>
+              <radialGradient id="dotLogin" cx="30%" cy="24%">
+                <stop stop-color="#e8b278" />
+                <stop offset="1" stop-color="#b87535" />
+              </radialGradient>
+            </defs>
+          </svg>
+          <p class="lead" style="margin: 0 0 30px; text-align: center">coffee chat 从认识对的人开始</p>
+          <div class="button-stack">
+            <button class="btn" data-go="source">微信一键登录</button>
+            <span class="jump-note">点击后进入：让 Agent 读资料</span>
+            <button class="btn secondary" data-go="source">用 Google 登录</button>
+            <button class="text-link" data-go="source">已有账号？ 登录</button>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="source">
+          <h2>让你的 Agent<br />先读懂你</h2>
+          <p class="lead">30 秒内基于你的公开发文构建一个 v0 档案，你可以改任何字段</p>
+          <div class="source-input">粘贴你的 Linkedin /<br />小红书 / 个人主页 URL</div>
+          <svg class="line-art source-art" viewBox="0 0 320 150" aria-hidden="true">
+            <rect x="26" y="58" width="62" height="62" rx="15" fill="none" stroke="currentColor" stroke-width="2" />
+            <text x="42" y="102" font-family="Arial" font-size="48" font-weight="700">in</text>
+            <path d="M138 36 C172 18 220 20 246 40 L236 132 L126 132 Z" fill="none" stroke="currentColor" stroke-width="2" />
+            <rect x="160" y="70" width="60" height="60" rx="16" fill="#e72c32" />
+            <text x="170" y="108" fill="white" font-family='PingFang SC, sans-serif' font-size="21" font-weight="800">小红书</text>
+            <circle cx="292" cy="88" r="32" fill="none" stroke="currentColor" stroke-width="2" />
+            <path d="M260 88 H324 M292 56 C276 75 276 101 292 120 M292 56 C308 75 308 101 292 120" fill="none" stroke="currentColor" stroke-width="2" />
+          </svg>
+          <button class="btn" data-go="objectives">让 Agent 读</button>
+          <span class="jump-note">点击后进入：目标选择</span>
+        </section>
+
+        <section class="screen" data-screen="objectives">
+          <h2>你想用 Pair 找<br />什么样的人?</h2>
+          <p class="lead" style="font-size: 21px">选 1-3 项 · 之后随时可改</p>
+          <div class="option-list">
+            <button class="option" data-go="objectives"><strong>聊聊创业</strong><span>和正在做 / 想做的人对谈</span></button>
+            <button class="option selected" data-go="objectives"><strong>想找 mentor</strong><span>找比你强 3-5 年的同行</span></button>
+            <button class="option" data-go="objectives"><strong>跨界打听</strong><span>想了解某行发展生态或趋势</span></button>
+            <button class="option" data-go="objectives"><strong>找联合创</strong></button>
+          </div>
+          <button class="btn" data-go="today-empty">下一步</button>
+          <span class="jump-note">点击后进入：Today 空状态</span>
+        </section>
+
+        <section class="screen" data-screen="today-empty">
+          <h2 class="empty-title">今天还没扫到<br />值得推进的人</h2>
+          <div class="empty-hero">
+            <span class="agent-dot"></span>
+            <svg class="line-art" viewBox="0 0 300 180" aria-hidden="true">
+              <path d="M60 126 C60 70 120 54 150 86 C178 46 244 70 226 126" fill="none" stroke="currentColor" stroke-width="2" />
+              <path d="M94 122 C112 148 180 150 207 122" fill="none" stroke="currentColor" stroke-width="2" />
+              <path d="M135 98 C148 84 159 84 172 98" fill="none" stroke="currentColor" stroke-width="2" />
+              <path d="M146 116 H154" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+            </svg>
+          </div>
+          <p class="empty-copy">下一轮 14:00，系统将继续扫描<br />你想认识 —— 段 + 立即找。</p>
+          <button class="fab" data-go="today" aria-label="立即找">+</button>
+          <span class="jump-note">点击 + 后进入：Today 推荐页</span>
+          <nav class="bottom-nav">
+            <button class="active" data-go="today-empty">Today</button>
+            <button data-go="people">People</button>
+            <button data-go="chats">Chats</button>
+            <button data-go="me">Me</button>
+          </nav>
+        </section>
+
+        <section class="screen" data-screen="today">
+          <h2 class="app-title">Today</h2>
+          <article class="today-card">
+            <div class="top">
+              <div class="avatar"><svg viewBox="0 0 72 72"><path d="M20 34 C20 19 32 12 45 18 C56 23 58 40 50 52 C42 63 27 59 22 48 C20 43 20 38 20 34Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M22 34 C34 33 38 22 51 28 M30 39 H31 M43 39 H44 M33 49 C37 52 42 52 46 49" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+              <div><h3>Sarah Chen</h3><p style="color: var(--fg-secondary); font-family: var(--serif)">Senior PM @ Stripe</p></div>
+            </div>
+            <p style="color: var(--fg-secondary); line-height: 1.65">她在支付、AI 产品和早期团队里有连续经验，Agent 判断你们的目标高度互补。</p>
+            <div class="tag-row"><span class="tag">AI 产品</span><span class="tag">0-1</span><span class="tag">mentor</span></div>
+            <div class="score"><span>对齐度</span><i></i><strong>8/10</strong></div>
+            <button class="btn" data-go="sarah">查看档案</button>
+            <span class="jump-note">点击后进入：Sarah Profile</span>
+          </article>
+          <nav class="bottom-nav">
+            <button class="active" data-go="today">Today</button>
+            <button data-go="people">People</button>
+            <button data-go="chats">Chats</button>
+            <button data-go="me">Me</button>
+          </nav>
+        </section>
+
+        <section class="screen" data-screen="people">
+          <h2 class="app-title">我的 Connections</h2>
+          <div class="segment">
+            <button class="active-seg">已建立</button>
+            <button>潜在</button>
+          </div>
+          <div class="person-list">
+            <button class="person" data-go="sarah"><span class="avatar"><svg viewBox="0 0 72 72"><path d="M22 33 C22 20 31 14 43 18 C53 21 57 31 54 43 C51 58 29 59 23 45 C22 41 21 37 22 33Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M21 34 C31 34 36 22 50 29 M31 38 H32 M43 38 H44 M34 48 C38 51 42 51 46 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span><strong>Sarah Chen</strong><span>Senior PM @ Stripe</span></span></button>
+            <button class="person" data-go="public"><span class="avatar"><svg viewBox="0 0 72 72"><path d="M22 33 C22 20 31 14 43 18 C53 21 57 31 54 43 C51 58 29 59 23 45 C22 41 21 37 22 33Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 28 C32 19 46 18 55 31 M30 39 H31 M43 39 H44 M34 49 C39 51 44 51 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span><strong>David Liu</strong><span>AI 研究员 @ Moonshot</span></span></button>
+            <button class="person" data-go="chats"><span class="avatar"><svg viewBox="0 0 72 72"><path d="M22 33 C22 20 31 14 43 18 C53 21 57 31 54 43 C51 58 29 59 23 45 C22 41 21 37 22 33Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M21 34 C31 34 36 22 50 29 M31 38 H32 M43 38 H44 M34 48 C38 51 42 51 46 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span><strong>Jessie Wu</strong><span>Growth @ Yiximo</span></span></button>
+          </div>
+          <nav class="bottom-nav">
+            <button data-go="today">Today</button>
+            <button class="active" data-go="people">People</button>
+            <button data-go="chats">Chats</button>
+            <button data-go="me">Me</button>
+          </nav>
+        </section>
+
+        <section class="screen" data-screen="chats">
+          <h2 class="app-title">Chats</h2>
+          <div class="chat-list">
+            <button class="chat" data-go="summary"><span class="agent-dot small"></span><span><strong>Sarah Chen</strong><span>A2A Summary 已生成</span></span><span>›</span></button>
+            <button class="chat" data-go="a2a"><span class="agent-dot small"></span><span><strong>A2A 进行中</strong><span>第 2 轮 · 正在确认目标</span></span><span>›</span></button>
+            <button class="chat" data-go="today"><span class="agent-dot small"></span><span><strong>Daniel Liu</strong><span>等待你发出 Invite</span></span><span>›</span></button>
+          </div>
+          <nav class="bottom-nav">
+            <button data-go="today">Today</button>
+            <button data-go="people">People</button>
+            <button class="active" data-go="chats">Chats</button>
+            <button data-go="me">Me</button>
+          </nav>
+        </section>
+
+        <section class="screen" data-screen="me">
+          <h2 class="settings-title">Settings</h2>
+          <div class="settings-list">
+            <button class="setting" data-go="today"><span>◎</span><span><strong>我的状态</strong></span><span>›</span></button>
+            <button class="setting" data-go="objectives"><span>▱</span><span><strong>我的 objectives</strong></span><span>›</span></button>
+            <button class="setting" data-go="a2a"><span>◌</span><span><strong>A2A 模式偏好</strong><span>(观察 | 映射)</span></span><span>›</span></button>
+            <button class="setting" data-go="today"><span>◡</span><span><strong>追踪设置</strong></span><span>›</span></button>
+            <button class="setting" data-go="people"><span>◍</span><span><strong>屏蔽列表</strong></span><span>›</span></button>
+            <button class="setting" data-go="source"><span>▢</span><span><strong>隐私设置</strong></span><span>›</span></button>
+            <button class="setting" data-go="login"><span>i</span><span><strong>关于 Pair</strong></span><span>›</span></button>
+          </div>
+          <button class="text-link logout" data-go="login">退出登录</button>
+          <nav class="bottom-nav">
+            <button data-go="today">Today</button>
+            <button data-go="people">People</button>
+            <button data-go="chats">Chats</button>
+            <button class="active" data-go="me">Me</button>
+          </nav>
+        </section>
+
+        <section class="screen" data-screen="sarah">
+          <div class="profile-card">
+            <div class="avatar" style="width: 96px; height: 96px"><svg viewBox="0 0 96 96"><circle cx="48" cy="48" r="38" fill="none" stroke="var(--border-subtle)" stroke-width="2"/><path d="M32 46 C33 31 45 24 59 30 C70 35 73 47 68 61 C63 76 40 76 33 62 C31 58 30 52 32 46Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M31 48 C44 49 51 36 66 41 M41 51 H42 M57 51 H58 M46 60 C50 63 54 63 58 60" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+            <h2>Sarah Chen</h2>
+            <p>Senior PM @ Stripe</p>
+            <div class="tag-row"><span class="tag">AI 产品</span><span class="tag">支付</span><span class="tag">mentor</span></div>
+          </div>
+          <div class="bio-box">她正在关注 AI agent 如何进入严肃工作流，也愿意和 0-1 产品同路人交换判断。你的 Agent 判断这次见面值得推进。</div>
+          <div class="button-stack" style="margin-top: 22px">
+            <button class="btn" data-go="a2a">让 Agent 先聊</button>
+            <button class="btn secondary" data-go="today">返回 Today</button>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="a2a">
+          <h2 class="app-title">A2A 对齐中</h2>
+          <div class="dialogue">
+            <p class="bubble agent">我的 Agent：我先确认一下，Jingfei 现在更想找能讨论 0-1 产品判断的人。</p>
+            <p class="bubble agent">Sarah 的 Agent：Sarah 可以聊，她最近也在看 AI 工具如何进入团队工作流。</p>
+            <p class="bubble user">我的 Agent：我们更看重真实案例，不只是泛泛聊趋势。</p>
+            <p class="bubble agent">Sarah 的 Agent：这点匹配。Sarah 可以分享 Stripe 内部项目推进经验。</p>
+          </div>
+          <div class="button-stack" style="margin-top: 26px">
+            <button class="btn" data-go="summary">生成 Summary</button>
+            <span class="jump-note">A2A 结束后进入：Summary Card</span>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="summary">
+          <h2 class="app-title">A2A Summary</h2>
+          <article class="summary-card">
+            <div class="metric"><span>Agent 判断</span><strong>8/10</strong></div>
+            <h3>值得约一次 30 分钟 coffee chat</h3>
+            <p style="color: var(--fg-secondary); line-height: 1.7">你们都在看 AI 产品进入真实组织的路径。Sarah 能补充支付和平台型产品经验，你能带来早期产品和增长视角。</p>
+            <div class="tag-row"><span class="tag">共同话题：AI 工作流</span><span class="tag">风险：时间窗口</span></div>
+            <button class="btn" data-go="people">加入 Connections</button>
+            <button class="btn secondary" data-go="chats">回 Chats</button>
+          </article>
+        </section>
+
+        <section class="screen" data-screen="public">
+          <div class="profile-card">
+            <h2>David Liu</h2>
+            <p>AI 研究员 @ Moonshot</p>
+            <div class="tag-row"><span class="tag">research</span><span class="tag">agents</span><span class="tag">evaluation</span></div>
+          </div>
+          <div class="bio-box">公开主页展示给未登录用户：只暴露职业信息、标签、bio 和 Pair invite，不展示电话、邮箱或实时位置。</div>
+          <button class="btn" style="margin-top: 22px" data-go="login">让 Agent 帮我介绍你</button>
+        </section>
+
+        <section class="screen center" data-screen="error">
+          <div>
+            <svg class="error-art line-art" viewBox="0 0 240 170" aria-hidden="true">
+              <path d="M72 98 C50 91 42 58 66 42 C82 18 125 14 147 42 C173 35 199 55 194 83 C220 93 211 132 181 132 C166 151 133 148 121 130 C105 148 70 139 72 98Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <path d="M105 72 L96 68 M135 72 L144 68 M105 95 C114 82 131 82 140 95" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <circle cx="120" cy="118" r="36" fill="url(#errDot)" />
+              <text x="102" y="125" font-size="30" font-weight="900">...</text>
+              <defs><radialGradient id="errDot" cx="32%" cy="24%"><stop stop-color="#e8b278"/><stop offset="1" stop-color="#b87535"/></radialGradient></defs>
+            </svg>
+            <h2 class="error-title">加载失败</h2>
+            <p class="error-copy">请检查网络后重试</p>
+            <button class="btn" data-go="source">重试</button>
+            <button class="text-link" style="margin-top: 26px" data-go="login">返回首页</button>
+          </div>
+        </section>
+      </section>
+
+      <aside class="logic">
+        <div class="logic-card">
+          <p class="eyebrow">页面跳转逻辑</p>
+          <h2 id="logic-title">登录</h2>
+          <p id="logic-detail" class="logic-detail">登录按钮进入资料读取页；已有账号同样进入 demo 主流程。</p>
+          <ol id="logic-list">
+            <li data-flow="login">Login → Source</li>
+            <li data-flow="source">Source → Objectives</li>
+            <li data-flow="objectives">Objectives → Today Empty</li>
+            <li data-flow="today-empty">Today Empty → Today</li>
+            <li data-flow="today">Today → Sarah Profile</li>
+            <li data-flow="sarah">Sarah Profile → A2A</li>
+            <li data-flow="a2a">A2A → Summary</li>
+            <li data-flow="summary">Summary → People / Chats</li>
+            <li data-flow="people">Bottom Nav: Today / People / Chats / Me</li>
+          </ol>
+        </div>
+      </aside>
+    </main>
+
+    <script>
+      const screens = [...document.querySelectorAll("[data-screen]")];
+      const jumpButtons = [...document.querySelectorAll("[data-go]")];
+      const flowItems = [...document.querySelectorAll("[data-flow]")];
+      const logicTitle = document.querySelector("#logic-title");
+      const logicDetail = document.querySelector("#logic-detail");
+
+      const logic = {
+        login: ["登录", "微信一键登录 / Google 登录 / 已有账号都会进入 Source，让 Agent 先读取公开资料。"],
+        source: ["读资料", "点击“让 Agent 读”进入 Objectives。错误场景可从右侧或快速跳转进入 Error 页面。"],
+        objectives: ["目标选择", "选择 1-3 个目标后点击“下一步”，进入 Today 空状态。"],
+        "today-empty": ["Today 空状态", "点击底部 + 表示立即扫描，进入 Today 推荐页；底部导航可去 People / Chats / Me。"],
+        today: ["Today 推荐", "点击 Sarah 推荐卡的“查看档案”，进入 Sarah Profile。"],
+        people: ["People", "联系人卡片可进入对应档案；底部导航可切换 Today / Chats / Me。"],
+        chats: ["Chats", "Summary 已生成的会话进入 Summary；进行中的会话进入 A2A。"],
+        me: ["Settings", "目标设置回 Objectives；退出登录回 Login；其他设置在 demo 中回到相关主流程页。"],
+        sarah: ["Sarah Profile", "点击“让 Agent 先聊”进入 A2A；返回按钮回 Today。"],
+        a2a: ["A2A", "模拟双方 Agent 对话，点击“生成 Summary”进入 Summary Card。"],
+        summary: ["Summary", "点击“加入 Connections”进入 People；点击“回 Chats”进入会话列表。"],
+        public: ["公开档案", "公开页 CTA 进入 Login，后续走完整建档与匹配流程。"],
+        error: ["错误页", "重试回 Source；返回首页回 Login。"],
+      };
+
+      function go(target) {
+        screens.forEach((screen) => screen.classList.toggle("active", screen.dataset.screen === target));
+        jumpButtons.forEach((button) => button.classList.toggle("active", button.dataset.go === target));
+        flowItems.forEach((item) => item.classList.toggle("active", item.dataset.flow === target));
+        const copy = logic[target] || logic.login;
+        logicTitle.textContent = copy[0];
+        logicDetail.textContent = copy[1];
+        location.hash = target;
+      }
+
+      jumpButtons.forEach((button) => {
+        button.addEventListener("click", () => go(button.dataset.go));
+      });
+
+      window.addEventListener("hashchange", () => {
+        const target = location.hash.replace("#", "");
+        if (logic[target]) go(target);
+      });
+
+      go(location.hash.replace("#", "") || "login");
+    </script>
+  </body>
+</html>

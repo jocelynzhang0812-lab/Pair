@@ -1,0 +1,198 @@
+<view class="screen with-tab">
+  <view class="topbar">
+    <view>
+      <text class="kicker"><text class="agent-dot thinking"></text>Agent · 下一轮 14:00</text>
+      <text class="title small">{{greeting}}</text>
+    </view>
+    <button class="icon-button">＋</button>
+  </view>
+
+  <view class="agent-status card">
+    <view class="agent-dot"></view>
+    <text>Pair 为你找了3位新朋友。</text>
+  </view>
+
+  <view wx:if="{{pageState === 'loading'}}" class="state-panel card">
+    <view class="state-visual">
+      <view class="agent-dot thinking"></view>
+    </view>
+    <text class="state-title">Agent 正在看今天适合你认识的人</text>
+    <text class="state-copy">我会先过滤掉不合适的人，只把值得你看的一小撮放到桌面上。</text>
+  </view>
+
+  <view wx:elif="{{pageState === 'empty'}}" class="state-panel card">
+    <view class="state-visual">
+      <view class="agent-dot"></view>
+    </view>
+    <text class="state-title">今天还没找到值得推荐的人</text>
+    <text class="state-copy">下一轮 14:00，也可以先调整你想见的人。</text>
+    <view class="state-actions">
+      <button class="primary-button" bindtap="adjustObjective">调整目标</button>
+      <button class="secondary-button" bindtap="retryLoad">手动刷新</button>
+    </view>
+  </view>
+
+  <view wx:elif="{{pageState === 'error'}}" class="state-panel card">
+    <view class="state-visual">
+      <view class="agent-dot"></view>
+    </view>
+    <text class="state-title">加载失败，请检查网络后重试</text>
+    <text class="state-copy">你的目标和已保存的连接不会丢失。</text>
+    <view class="state-actions">
+      <button class="primary-button" bindtap="retryLoad">重试</button>
+    </view>
+  </view>
+
+  <view wx:elif="{{pageState === 'failed'}}" class="state-panel card">
+    <view class="state-visual">
+      <view class="agent-dot"></view>
+    </view>
+    <text class="state-title">本轮推荐没有完成</text>
+    <text class="state-copy">Agent 没拿到足够可靠的判断，先不把低质量人选推给你。</text>
+    <view class="state-actions">
+      <button class="primary-button" bindtap="retryLoad">重新扫描</button>
+      <button class="secondary-button" bindtap="adjustObjective">调整目标</button>
+    </view>
+  </view>
+
+  <view wx:else class="card-stack-wrap">
+    <view class="stack-card back-card" wx:if="{{nextMatch}}">
+      <view class="match-head">
+        <image class="person-avatar-png" src="{{nextMatch.person.avatarSrc}}" mode="aspectFit"></image>
+        <view class="row-body">
+          <text class="match-name">{{nextMatch.person.name}}</text>
+          <text class="row-subtitle">{{nextMatch.person.headline}}</text>
+        </view>
+        <text class="score">{{nextMatch.score}}</text>
+      </view>
+      <view class="chip-row">
+        <text wx:for="{{nextMatch.person.tags}}" wx:key="*this" class="chip">#{{item}}</text>
+      </view>
+    </view>
+
+    <movable-area class="swipe-area">
+      <movable-view
+        class="swipe-card"
+        direction="horizontal"
+        x="{{dragX}}"
+        damping="28"
+        friction="2"
+        bindchange="handleDragChange"
+        bindtouchend="handleDragEnd"
+      >
+        <view class="match-card card raised">
+          <view class="match-head" catchtap="openMatchDetail">
+            <image class="person-avatar-png" src="{{activeMatch.person.avatarSrc}}" mode="aspectFit"></image>
+            <view class="row-body">
+              <text class="match-name">{{activeMatch.person.name}}</text>
+              <text class="row-subtitle">{{activeMatch.person.headline}}</text>
+            </view>
+            <text class="score">{{activeMatch.score}}</text>
+          </view>
+
+          <view class="chip-row">
+            <text wx:for="{{activeMatch.person.tags}}" wx:key="*this" class="chip">#{{item}}</text>
+          </view>
+
+          <view class="why-block">
+            <text class="block-label">Why ta</text>
+            <text class="block-copy">{{activeMatch.whyMatch}}</text>
+          </view>
+
+          <view class="draft-block">
+            <text class="block-label">Agent drafted</text>
+            <text class="draft-copy serif">“{{activeMatch.intro}}”</text>
+          </view>
+
+          <view class="action-row">
+            <button class="small-ghost" catchtap="passMatch">Pass</button>
+            <button class="small-secondary" catchtap="rewriteIntro">改写</button>
+            <button class="small-primary" catchtap="sendInvite">发出</button>
+          </view>
+        </view>
+      </movable-view>
+    </movable-area>
+  </view>
+
+  <view wx:if="{{pageState === 'ready'}}" class="shelf">
+    <view class="shelf-title-row">
+      <text class="section-title shelf-title">Pass</text>
+      <text class="shelf-hint">右滑卡片会收进这里</text>
+    </view>
+    <view class="shelf-empty" wx:if="{{archivedMatches.length === 0}}">
+      <text>还没有划过的卡片</text>
+    </view>
+    <scroll-view wx:else class="shelf-scroll" scroll-x="true" show-scrollbar="{{false}}">
+      <view class="shelf-track">
+        <view wx:for="{{archivedMatches}}" wx:key="id" class="shelf-item">
+          <image class="shelf-avatar" src="{{item.person.avatarSrc}}" mode="aspectFit"></image>
+          <text class="shelf-name">{{item.person.name}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view wx:if="{{detailVisible}}" class="drawer-mask" catchtap="closeMatchDetail">
+    <view class="drawer-sheet" catchtap="noop">
+      <view class="drawer-handle"></view>
+      <view class="match-head">
+        <image class="person-avatar-png" src="{{detailMatch.person.avatarSrc}}" mode="aspectFit"></image>
+        <view class="row-body">
+          <text class="match-name">{{detailMatch.person.name}}</text>
+          <text class="row-subtitle">{{detailMatch.person.headline}}</text>
+        </view>
+        <text class="score">{{detailMatch.score}}</text>
+      </view>
+
+      <view class="chip-row">
+        <text wx:for="{{detailMatch.person.tags}}" wx:key="*this" class="chip">#{{item}}</text>
+      </view>
+
+      <view class="why-block">
+        <text class="block-label">Why ta</text>
+        <text class="block-copy">{{detailMatch.whyMatch}}</text>
+      </view>
+
+      <view class="why-block">
+        <text class="block-label">简介</text>
+        <text class="block-copy">{{detailMatch.person.bio}}</text>
+      </view>
+
+      <view class="draft-block">
+        <text class="block-label">Agent drafted</text>
+        <text class="draft-copy serif">“{{detailMatch.intro}}”</text>
+      </view>
+
+      <view class="why-block">
+        <text class="block-label">可能的话题</text>
+        <view class="chip-row">
+          <text wx:for="{{detailMatch.topics}}" wx:key="*this" class="chip">{{item}}</text>
+        </view>
+      </view>
+
+      <view class="state-actions">
+        <button class="primary-button" bindtap="sendInvite">发出邀请</button>
+        <button class="secondary-button" bindtap="closeMatchDetail">再想想</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="bottom-nav">
+    <navigator class="tab-item active" url="/pages/today/index" open-type="reLaunch">
+      <image class="tab-icon" src="/assets/prototype/tab-today.png" mode="aspectFit"></image>
+      <text class="tab-label">Today</text>
+    </navigator>
+    <navigator class="tab-item" url="/pages/people/index" open-type="reLaunch">
+      <image class="tab-icon" src="/assets/prototype/tab-people.png" mode="aspectFit"></image>
+      <text class="tab-label">People</text>
+    </navigator>
+    <navigator class="tab-item" url="/pages/chats/index" open-type="reLaunch">
+      <image class="tab-icon" src="/assets/prototype/tab-chats.png" mode="aspectFit"></image>
+      <text class="tab-label">Chats</text>
+    </navigator>
+    <navigator class="tab-item" url="/pages/me/index" open-type="reLaunch">
+      <image class="tab-icon" src="/assets/prototype/tab-me.png" mode="aspectFit"></image>
+      <text class="tab-label">Me</text>
+    </navigator>
+  </view>
+</view>

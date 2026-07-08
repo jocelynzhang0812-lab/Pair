@@ -1,0 +1,61 @@
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+    container_name: pair-api
+    restart: unless-stopped
+    env_file:
+      - ../../env-production-template
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    ports:
+      - '127.0.0.1:3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - pair-network
+
+  postgres:
+    image: postgres:15
+    container_name: pair-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pair}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pair}
+      POSTGRES_DB: ${POSTGRES_DB:-pair}
+    volumes:
+      - pair-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-pair} -d ${POSTGRES_DB:-pair}']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - pair-network
+
+  redis:
+    image: redis:7
+    container_name: pair-redis
+    restart: unless-stopped
+    volumes:
+      - pair-redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - pair-network
+
+volumes:
+  pair-postgres-data:
+  pair-redis-data:
+
+networks:
+  pair-network:
+    driver: bridge

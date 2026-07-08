@@ -1,0 +1,421 @@
+// Pair · Prisma schema (P3-03: 完整 Phase-1 实体).
+// Field naming: camelCase in Prisma models, snake_case columns/tables via @map/@@map
+// to match Pair-PRD-前三期.md §1.6 data model. Enums/fields cross-checked against
+// packages/shared/src/types.ts. Conservative relations only (1:1 via @unique FK,
+// otherwise 1:many); no implicit many-to-many. JSON only for A2A message metadata.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/**
+ * --------------------------------------------------------------------------
+ */
+/**
+ * Enums
+ */
+/**
+ * --------------------------------------------------------------------------
+ */
+
+/// 登录方式（PRD users.auth_provider）。
+enum AuthProvider {
+  email
+  wechat
+  google
+}
+
+/// 目标互补对（PRD users.objectives[].kind）。
+enum ObjectiveKind {
+  startup
+  mentor
+  cross_industry
+  cofound
+}
+
+/// 互补对中的哪一半（shared ObjectiveSide 'a' | 'b'）。
+enum ObjectiveSide {
+  a
+  b
+}
+
+/// Match 状态机（PRD matches.state）。
+enum MatchStatus {
+  pending
+  a_accepted
+  b_accepted
+  both_accepted
+  dialogue_running
+  dialogue_done
+  scheduled
+  done
+  rejected
+}
+
+/// 开场白文案风格（PRD intros.variant）。
+enum IntroVariant {
+  professional
+  casual
+  story
+}
+
+/// A2A 会话状态（PRD dialogues.state）。
+enum A2ASessionState {
+  pending
+  running
+  completed
+  aborted
+  failed
+}
+
+/// 见面状态（PRD meetings.state）。
+enum MeetingStatus {
+  scheduled
+  done
+  cancelled
+}
+
+/// 社交来源平台（shared SocialPlatform）。
+enum SocialPlatform {
+  linkedin
+  xiaohongshu
+  website
+  other
+}
+
+/// 异步 AI 任务类型。
+enum AiJobKind {
+  profile_generate
+  match_generate
+  dialogue_run
+  summary_generate
+}
+
+/// 异步 AI 任务状态。
+enum AiJobState {
+  queued
+  running
+  succeeded
+  failed
+  cancelled
+}
+
+/// 档案草稿状态。
+enum ProfileDraftState {
+  draft
+  confirmed
+  discarded
+}
+
+/**
+ * --------------------------------------------------------------------------
+ */
+/**
+ * User & Profile
+ */
+/**
+ * --------------------------------------------------------------------------
+ */
+
+/// 用户（PRD `users` 表）。
+model User {
+  id                  String       @id @default(uuid()) @db.Uuid
+  authProvider        AuthProvider @map("auth_provider")
+  authProviderId      String       @map("auth_provider_id")
+  pairProfileUrl      String       @unique @map("pair_profile_url")
+  meetingQuotaPerWeek Int          @default(3) @map("meeting_quota_per_week")
+  inviteCode          String?      @map("invite_code")
+  createdAt           DateTime     @default(now()) @map("created_at")
+  updatedAt           DateTime     @updatedAt @map("updated_at")
+
+  profile     Profile?
+  objectives  Objective[]
+  socialLinks SocialLink[]
+  matchesAsA  Match[]        @relation("MatchUserA")
+  matchesAsB  Match[]        @relation("MatchUserB")
+  a2aMessages A2AMessage[]   @relation("MessageSpeaker")
+  feedback    FeedbackCard[]
+  publicPage  PublicPage?
+  aiJobs      AiJob[]
+  drafts      ProfileDraft[]
+
+  @@map("users")
+}
+
+/// 用户档案（PRD users.pair_profile，拆为独立 1:1 表）。
+model Profile {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @map("user_id") @db.Uuid
+  name      String
+  headline  String
+  avatarUrl String?  @map("avatar_url")
+  bio       String
+  tags      String[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+/// 用户目标（PRD users.objectives JSON 数组拆为独立表，1 用户 1–3 条）。
+model Objective {
+  id        String        @id @default(uuid()) @db.Uuid
+  userId    String        @map("user_id") @db.Uuid
+  kind      ObjectiveKind
+  side      ObjectiveSide
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("objectives")
+}
+
+/// 档案来源链接（onboarding 粘贴的公开 URL）。
+model SocialLink {
+  id        String         @id @default(uuid()) @db.Uuid
+  userId    String         @map("user_id") @db.Uuid
+  platform  SocialPlatform
+  url       String
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("social_links")
+}
+
+/**
+ * --------------------------------------------------------------------------
+ */
+/**
+ * Match & Invitation
+ */
+/**
+ * --------------------------------------------------------------------------
+ */
+
+/// Match（PRD `matches` 表）。
+model Match {
+  id            String        @id @default(uuid()) @db.Uuid
+  createdAt     DateTime      @default(now()) @map("created_at")
+  userAId       String        @map("user_a_id") @db.Uuid
+  userBId       String        @map("user_b_id") @db.Uuid
+  objectiveKind ObjectiveKind @map("objective_kind")
+  score         Float
+  reason        String        @db.Text
+  state         MatchStatus   @default(pending)
+
+  userA       User         @relation("MatchUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB       User         @relation("MatchUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  session     A2ASession?
+  invitations Invitation[]
+  meetings    Meeting[]
+
+  @@index([userAId])
+  @@index([userBId])
+  @@index([state])
+  @@map("matches")
+}
+
+/// 邀约 / 开场白（PRD `intros` 表）。
+model Invitation {
+  id          String       @id @default(uuid()) @db.Uuid
+  matchId     String       @map("match_id") @db.Uuid
+  generatedAt DateTime     @default(now()) @map("generated_at")
+  text        String       @db.Text
+  variant     IntroVariant
+  isActive    Boolean      @default(true) @map("is_active")
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@index([matchId])
+  @@map("intros")
+}
+
+/**
+ * --------------------------------------------------------------------------
+ */
+/**
+ * A2A · Agent-to-Agent dialogue
+ */
+/**
+ * --------------------------------------------------------------------------
+ */
+
+/// A2A 会话（PRD `dialogues` 表，1:1 with Match）。
+model A2ASession {
+  id          String          @id @default(uuid()) @db.Uuid
+  matchId     String          @unique @map("match_id") @db.Uuid
+  state       A2ASessionState @default(pending)
+  totalRounds Int             @default(5) @map("total_rounds")
+  startedAt   DateTime?       @map("started_at")
+  completedAt DateTime?       @map("completed_at")
+
+  match    Match        @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  messages A2AMessage[]
+  summary  A2ASummary?
+
+  @@map("dialogues")
+}
+
+/// A2A 单条消息（PRD `dialogue_messages` 表）。
+model A2AMessage {
+  id                 String @id @default(uuid()) @db.Uuid
+  sessionId          String @map("session_id") @db.Uuid
+  round              Int
+  speakerAgentUserId String @map("speaker_agent_user_id") @db.Uuid
+  content            String @db.Text
+  redactedSpans      Json   @default("[]") @map("redacted_spans")
+
+  session A2ASession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  speaker User       @relation("MessageSpeaker", fields: [speakerAgentUserId], references: [id])
+
+  @@index([sessionId])
+  @@index([sessionId, round])
+  @@map("dialogue_messages")
+}
+
+/// A2A 总结（PRD `summaries` 表，1:1 with A2ASession）。
+model A2ASummary {
+  id             String   @id @default(uuid()) @db.Uuid
+  sessionId      String   @unique @map("session_id") @db.Uuid
+  yourViewOfThem String   @map("your_view_of_them") @db.Text
+  theirViewOfYou String   @map("their_view_of_you") @db.Text
+  topics         String[]
+  alignmentScore Int      @map("alignment_score")
+  scoreReason    String   @map("score_reason") @db.Text
+  riskNote       String?  @map("risk_note") @db.Text
+  generatedAt    DateTime @default(now()) @map("generated_at")
+
+  session A2ASession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("summaries")
+}
+
+/**
+ * --------------------------------------------------------------------------
+ */
+/**
+ * Meeting & Feedback
+ */
+/**
+ * --------------------------------------------------------------------------
+ */
+
+/// 见面（PRD `meetings` 表）。Phase 1 仅占位。
+model Meeting {
+  id          String        @id @default(uuid()) @db.Uuid
+  matchId     String        @map("match_id") @db.Uuid
+  scheduledAt DateTime      @map("scheduled_at")
+  meetingUrl  String        @map("meeting_url")
+  state       MeetingStatus @default(scheduled)
+
+  match    Match          @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  feedback FeedbackCard[]
+
+  @@index([matchId])
+  @@map("meetings")
+}
+
+/// 会后反馈（PRD `feedback` 表）。
+model FeedbackCard {
+  id          String   @id @default(uuid()) @db.Uuid
+  meetingId   String   @map("meeting_id") @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  score       Int
+  tags        String[]
+  comment     String   @db.Text
+  submittedAt DateTime @default(now()) @map("submitted_at")
+
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@index([meetingId])
+  @@index([userId])
+  @@map("feedback")
+}
+
+/**
+ * --------------------------------------------------------------------------
+ */
+/**
+ * Public page
+ */
+/**
+ * --------------------------------------------------------------------------
+ */
+
+/// 公开档案页元数据（PRD F1.14 / design §4.5）。
+/// slug 已存在于 User.pairProfileUrl，此处不重复 slug 列。
+model PublicPage {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @unique @map("user_id") @db.Uuid
+  ogImageUrl  String?  @map("og_image_url")
+  isPublished Boolean  @default(false) @map("is_published")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("public_pages")
+}
+
+/**
+ * --------------------------------------------------------------------------
+ */
+/**
+ * AI jobs & drafts
+ */
+/**
+ * --------------------------------------------------------------------------
+ */
+
+/// 异步 AI 任务（Profile / Match / Dialogue / Summary）。
+model AiJob {
+  id           String     @id @default(uuid()) @db.Uuid
+  userId       String?    @map("user_id") @db.Uuid
+  kind         AiJobKind
+  state        AiJobState @default(queued)
+  input        Json
+  output       Json?
+  errorCode    String?    @map("error_code")
+  errorMessage String?    @map("error_message") @db.Text
+  retryCount   Int        @default(0) @map("retry_count")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  startedAt    DateTime?  @map("started_at")
+  finishedAt   DateTime?  @map("finished_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([state])
+  @@index([kind])
+  @@map("ai_jobs")
+}
+
+/// Onboarding profile 生成草稿。
+model ProfileDraft {
+  id          String            @id @default(uuid()) @db.Uuid
+  userId      String            @map("user_id") @db.Uuid
+  sourceUrl   String?           @map("source_url") @db.Text
+  pastedText  String?           @map("pasted_text") @db.Text
+  draft       Json
+  confidence  Float
+  state       ProfileDraftState @default(draft)
+  createdAt   DateTime          @default(now()) @map("created_at")
+  confirmedAt DateTime?         @map("confirmed_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([state])
+  @@map("profile_drafts")
+}

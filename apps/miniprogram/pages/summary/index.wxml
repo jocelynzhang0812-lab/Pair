@@ -1,0 +1,64 @@
+<view class="screen">
+  <view class="topbar">
+    <button class="back-button" bindtap="goBack">‹</button>
+    <text class="kicker"><text class="agent-dot {{summaryState === 'loading' ? 'thinking' : ''}}"></text>{{summaryState === 'loading' ? '对齐中' : '对齐完成'}}</text>
+    <view></view>
+  </view>
+
+  <view wx:if="{{summaryState === 'loading'}}" class="state-panel card">
+    <view class="state-visual">
+      <view class="agent-dot thinking"></view>
+    </view>
+    <text class="state-title">两个 Agent 正在替你们对齐</text>
+    <text class="state-copy">预计 1-2 分钟，完成后这里会直接给你一张可判断的 Summary。</text>
+    <view class="state-actions">
+      <button class="secondary-button" bindtap="goToday">先看 Today</button>
+    </view>
+  </view>
+
+  <view wx:elif="{{summaryState === 'missing'}}" class="state-panel card">
+    <view class="state-visual">
+      <view class="agent-dot"></view>
+    </view>
+    <text class="state-title">这轮还没有可用的 Summary</text>
+    <text class="state-copy">对齐可能被中止或没有完成。你可以看看完整对话，或先回 Today。</text>
+    <view class="state-actions">
+      <button class="primary-button" bindtap="viewDialogue">查看完整对话</button>
+      <button class="secondary-button" bindtap="goToday">先看 Today</button>
+    </view>
+  </view>
+
+  <block wx:else>
+    <view class="score-panel">
+      <text class="score-number">{{summary.score}}</text>
+      <text class="score-unit">/ 10</text>
+    </view>
+    <text class="title small">{{summary.oneLine}}</text>
+
+    <view class="card">
+      <text class="summary-label">你的视角</text>
+      <text class="summary-copy">{{summary.yourView}}</text>
+    </view>
+
+    <view class="card">
+      <text class="summary-label">对方的视角</text>
+      <text class="summary-copy">{{summary.theirView}}</text>
+    </view>
+
+    <view class="section-title">可聊话题</view>
+    <view class="chip-row">
+      <text wx:for="{{summary.topics}}" wx:key="*this" class="chip selected">{{item}}</text>
+    </view>
+
+    <view class="card risk-card">
+      <text class="summary-label">风险提示</text>
+      <text class="summary-copy">{{summary.risk}}</text>
+    </view>
+
+    <view class="summary-actions">
+      <button class="primary-button" bindtap="schedule">安排见面</button>
+      <button class="secondary-button" bindtap="notInterested">不想见了</button>
+    </view>
+    <button class="ghost-button" bindtap="viewDialogue">查看完整对话</button>
+  </block>
+</view>

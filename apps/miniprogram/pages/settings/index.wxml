@@ -1,0 +1,21 @@
+<view class="screen">
+  <view class="topbar">
+    <button class="back-button" bindtap="goBack">‹</button>
+    <view></view>
+    <view></view>
+  </view>
+
+  <text class="title settings-title">Settings</text>
+
+  <view class="settings-list">
+    <view wx:for="{{items}}" wx:key="label" class="setting-item" data-label="{{item.label}}" bindtap="openItem">
+      <view class="setting-left">
+        <image class="setting-icon-png" src="{{item.iconSrc}}" mode="aspectFit"></image>
+        <text>{{item.label}}</text>
+      </view>
+      <text class="muted">›</text>
+    </view>
+  </view>
+
+  <button class="ghost-button logout" bindtap="logout">退出登录</button>
+</view>

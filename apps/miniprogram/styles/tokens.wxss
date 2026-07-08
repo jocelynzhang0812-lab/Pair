@@ -1,0 +1,29 @@
+/* Pair token mirror for WXSS. Keep values aligned with packages/shared/src/tokens.ts. */
+page {
+  --pair-bg-base: #F7F5F0;
+  --pair-bg-raised: #FFFFFF;
+  --pair-bg-sunken: #EFECE5;
+  --pair-fg-primary: #141210;
+  --pair-ink: #050505;
+  --pair-copy: #363636;
+  --pair-copy-strong: #2D2A26;
+  --pair-fg-secondary: #6B655E;
+  --pair-fg-tertiary: #A39E96;
+  --pair-fg-inverse: #F7F5F0;
+  --pair-border-subtle: #EAE6DD;
+  --pair-border-default: #D5CFC2;
+  --pair-border-strong: #141210;
+  --pair-border-prototype: #DEDAD2;
+  --pair-accent: #B68559;
+  --pair-accent-dark: #7F5C3B;
+  --pair-accent-soft: #F2E9DC;
+  --pair-accent-glow: rgba(182, 133, 89, 0.18);
+  --pair-danger: #A94D49;
+  --pair-xiaohongshu-red: #E92E35;
+  --pair-font-serif: "Source Han Serif SC", "Noto Serif CJK SC", "STSongti-SC", serif;
+  --pair-font-sans: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --pair-shadow-card: 0 1rpx 0 rgba(20, 18, 16, 0.04);
+  --pair-shadow-elevated: 0 12rpx 40rpx rgba(20, 18, 16, 0.06), 0 1rpx 0 rgba(20, 18, 16, 0.04);
+  --pair-shadow-fab: 0 8rpx 24rpx rgba(20, 18, 16, 0.18);
+  --pair-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}

@@ -1,0 +1,92 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+__pycache__/
+*.py[cod]
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+desktop.ini
+
+# IDEs and editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*.swo
+*~
+
+# Local AI/editor assistant state
+.agent/
+.agents/
+.claude/
+.codebuddy/
+.codewiz/
+.codex/
+.continue/
+.cursor/
+.gemini/
+.kiro/
+.opencode/
+.qoder/
+.roo/
+.trae/
+.windsurf/
+
+# Miniprogram
+apps/miniprogram/miniprogram_npm/
+apps/miniprogram/node_modules/
+apps/miniprogram/*.js.map
+apps/miniprogram/project.private.config.json
+
+# Prisma
+# NOTE: migration SQL under prisma/migrations/** IS committed on purpose
+# (Prisma migrations are version-controlled for team/CI). Only the generated
+# client output is ignored.
+apps/api/generated/prisma/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Vercel
+.vercel/
+
+# Misc
+*.pem
+.cache/
+.temp/
+tmp/

@@ -1,0 +1,12 @@
+**/.git
+**/.svn
+**/.hg
+**/node_modules
+**/dist
+**/build
+**/.next
+**/out
+**/*.log
+**/coverage
+**/miniprogram_npm
+**/*.wxss

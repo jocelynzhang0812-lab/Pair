@@ -1,0 +1,172 @@
+<view class="screen onboarding-screen">
+  <view wx:if="{{step === 'identity'}}">
+    <text class="title">让你的 Agent\n先读懂你</text>
+    <text class="subtitle">30 秒内基于你的公开发文\n构建一个 v0 档案，你可以\n改任何字段</text>
+
+    <view class="input-card">
+      <textarea
+        class="source-input"
+        value="{{sourceUrl}}"
+        bindinput="updateSource"
+        placeholder="粘贴你的 Linkedin / 小红书 / 个人主页 URL"
+        placeholder-class="placeholder"
+        auto-height="{{true}}"
+      ></textarea>
+      <text wx:if="{{sourceError}}" class="inline-error">{{sourceError}}</text>
+    </view>
+
+    <view class="import-visual">
+      <image class="prototype-import-image" src="/assets/prototype/onboarding-import.png" mode="aspectFit"></image>
+    </view>
+
+    <button class="primary-button" bindtap="startReading">让 Agent 读</button>
+  </view>
+
+  <view wx:elif="{{step === 'reading'}}">
+    <view wx:if="{{generationState === 'failed'}}" class="state-panel card">
+      <view class="state-visual">
+        <view class="agent-dot"></view>
+      </view>
+      <text class="state-title">档案生成失败</text>
+      <text class="state-copy">这次没有读到足够稳定的信息。你可以重新尝试，也可以先手动填一个 v0 档案。</text>
+      <view class="state-actions">
+        <button class="primary-button" bindtap="retryGeneration">重新尝试</button>
+        <button class="secondary-button" bindtap="manualProfile">我手动填写</button>
+      </view>
+    </view>
+
+    <view wx:else class="reading">
+      <view class="reading-orbit">
+        <view class="agent-dot thinking"></view>
+        <view class="orbit-ring"></view>
+      </view>
+      <text class="title small">这是 Agent\n看到的你</text>
+      <view class="card">
+        <view wx:for="{{tasks}}" wx:key="*this" class="task-row">
+          <view class="agent-dot"></view>
+          <text>{{item}}...</text>
+        </view>
+        <view class="progress-track">
+          <view class="progress-fill" style="width: {{progress}}%;"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:elif="{{step === 'profile'}}">
+    <text class="title small">这是 Agent\n看到的你</text>
+    <view class="card raised profile-card">
+      <view class="row">
+        <image class="profile-avatar-png" src="/assets/prototype/person-sarah.png" mode="aspectFit"></image>
+        <view class="row-body">
+          <block wx:if="{{editingProfile}}">
+            <input
+              class="edit-field"
+              value="{{profile.name}}"
+              data-field="name"
+              bindinput="updateProfileField"
+              placeholder="姓名"
+              placeholder-class="placeholder"
+            />
+            <input
+              class="edit-field"
+              value="{{profile.headline}}"
+              data-field="headline"
+              bindinput="updateProfileField"
+              placeholder="一句话身份"
+              placeholder-class="placeholder"
+            />
+          </block>
+          <block wx:else>
+            <text class="row-title">{{profile.name}}</text>
+            <text class="row-subtitle">{{profile.headline}}</text>
+          </block>
+        </view>
+      </view>
+      <view class="chip-row">
+        <text wx:for="{{profile.tags}}" wx:key="*this" class="chip selected">#{{item}}</text>
+      </view>
+      <textarea
+        wx:if="{{editingProfile}}"
+        class="edit-field edit-bio"
+        value="{{profile.bio}}"
+        data-field="bio"
+        bindinput="updateProfileField"
+        placeholder="简介"
+        placeholder-class="placeholder"
+        auto-height="{{true}}"
+      ></textarea>
+      <text wx:else class="profile-bio">{{profile.bio}}</text>
+    </view>
+    <view wx:if="{{profileState === 'missing_fields'}}" class="card missing-card">
+      <text class="missing-label">需要补充</text>
+      <view class="missing-list">
+        <text wx:for="{{profileMissingFields}}" wx:key="*this" class="status-pill failed">{{item}}</text>
+      </view>
+      <text class="missing-copy">这些字段会影响 Agent 替你表达背景和诉求，建议先补齐再开始匹配。</text>
+    </view>
+    <block wx:if="{{editingProfile}}">
+      <button class="primary-button" bindtap="saveProfile">保存</button>
+    </block>
+    <block wx:else>
+      <button class="secondary-button" bindtap="startEditProfile">改一改</button>
+      <button class="primary-button" bindtap="goObjectives">下一步</button>
+    </block>
+  </view>
+
+  <view wx:elif="{{step === 'objectives'}}">
+    <text class="title small">你想用 Pair 找\n什么样的人？</text>
+    <text class="subtitle">选 1-3 项 · 之后随时可改</text>
+
+    <view class="objective-list">
+      <view
+        wx:for="{{objectives}}"
+        wx:key="id"
+        class="objective-card {{item.selected ? 'active' : ''}}"
+        data-id="{{item.id}}"
+        bindtap="toggleObjective"
+      >
+        <view class="radio">
+          <view class="radio-dot"></view>
+        </view>
+        <view>
+          <text class="objective-title">{{item.title}}</text>
+          <text class="objective-detail">{{item.detail}}</text>
+        </view>
+      </view>
+    </view>
+
+    <button class="primary-button" bindtap="goMode">下一步</button>
+  </view>
+
+  <view wx:else>
+    <text class="title small">Agent 和对方 Agent\n谈的时候，你想...</text>
+
+    <view class="objective-list">
+      <view
+        class="objective-card {{mode === 'delegated' ? 'active' : ''}}"
+        data-mode="delegated"
+        bindtap="selectMode"
+      >
+        <view class="radio"><view class="radio-dot"></view></view>
+        <view>
+          <text class="objective-title">托付型 · 推荐</text>
+          <text class="objective-detail">Agent 全自动谈，你只看 Summary</text>
+        </view>
+      </view>
+      <view
+        class="objective-card {{mode === 'collaborative' ? 'active' : ''}}"
+        data-mode="collaborative"
+        bindtap="selectMode"
+      >
+        <view class="radio"><view class="radio-dot"></view></view>
+        <view>
+          <text class="objective-title">参与型</text>
+          <text class="objective-detail">每轮草稿先给你审</text>
+        </view>
+      </view>
+    </view>
+
+    <button class="primary-button" bindtap="finish">完成注册</button>
+  </view>
+</view>

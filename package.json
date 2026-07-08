@@ -1,0 +1,13 @@
+{
+  "name": "pair",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "typecheck": "pnpm --filter @pair/shared typecheck && pnpm --filter @pair/api typecheck && pnpm --filter @pair/web typecheck && pnpm --filter @pair/miniprogram typecheck",
+    "dev:api": "pnpm --filter @pair/api start:dev",
+    "dev:web": "pnpm --filter @pair/web dev"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

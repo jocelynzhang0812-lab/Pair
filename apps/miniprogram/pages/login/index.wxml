@@ -1,0 +1,18 @@
+<view class="screen login-screen">
+  <view class="hero-visual" aria-hidden="true">
+    <image class="prototype-hero-image" src="/assets/prototype/login-flight.png" mode="aspectFit"></image>
+  </view>
+
+  <view class="title-block">
+    <text class="title">每个职场人\n都有一个 Agent</text>
+    <text class="subtitle">Let your agent make the first move</text>
+  </view>
+
+  <text class="login-caption serif">coffee chat 从认识对的人开始</text>
+
+  <button class="primary-button" bindtap="handleWechatLogin">
+    {{loading ? '登录中...' : '微信一键登录'}}
+  </button>
+  <button class="secondary-button" bindtap="handleGoogleLogin">用 Google 登录</button>
+  <button class="ghost-button" bindtap="handleWechatLogin">已有账号？ 登录</button>
+</view>

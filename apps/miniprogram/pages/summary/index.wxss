@@ -1,0 +1,56 @@
+.score-panel {
+  display: flex;
+  align-items: baseline;
+  margin-top: var(--pair-space-lg);
+}
+
+.score-number {
+  color: var(--pair-accent-dark);
+  font-family: var(--pair-font-serif);
+  font-size: var(--pair-summary-score-size);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.score-unit {
+  margin-left: 10rpx;
+  color: var(--pair-fg-secondary);
+  font-size: var(--pair-subtitle-size);
+}
+
+.summary-label,
+.summary-copy {
+  display: block;
+}
+
+.summary-label {
+  color: var(--pair-fg-tertiary);
+  font-size: var(--pair-meta-size);
+}
+
+.summary-copy {
+  margin-top: var(--pair-space-sm);
+  font-family: var(--pair-font-serif);
+  font-size: var(--pair-body-size);
+  line-height: 1.65;
+}
+
+.risk-card {
+  background: var(--pair-bg-sunken);
+}
+
+.summary-actions {
+  display: flex;
+  gap: var(--pair-space-md);
+  margin-top: var(--pair-space-2xl);
+}
+
+.summary-actions + .ghost-button {
+  margin-top: var(--pair-space-lg);
+}
+
+.summary-actions .primary-button,
+.summary-actions .secondary-button {
+  flex: 1;
+  margin-top: 0;
+}

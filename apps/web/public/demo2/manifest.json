@@ -1,0 +1,77 @@
+[
+  {
+    "index": 1,
+    "alt": "01 登录",
+    "file": "/demo2/01-01-登录.webp"
+  },
+  {
+    "index": 2,
+    "alt": "02 添加身份",
+    "file": "/demo2/02-02-添加身份.webp"
+  },
+  {
+    "index": 3,
+    "alt": "03 Agent 抓取 / 档案预览",
+    "file": "/demo2/03-03-Agent-抓取-档案预览.webp"
+  },
+  {
+    "index": 4,
+    "alt": "04 Objectives 选择",
+    "file": "/demo2/04-04-Objectives-选择.webp"
+  },
+  {
+    "index": 5,
+    "alt": "05 A2A 模式偏好",
+    "file": "/demo2/05-05-A2A-模式偏好.webp"
+  },
+  {
+    "index": 6,
+    "alt": "06 Today 主屏",
+    "file": "/demo2/06-06-Today-主屏.webp"
+  },
+  {
+    "index": 7,
+    "alt": "07 A2A 预览 · 托付型",
+    "file": "/demo2/07-07-A2A-预览-托付型.webp"
+  },
+  {
+    "index": 8,
+    "alt": "08 A2A Summary 卡片",
+    "file": "/demo2/08-08-A2A-Summary-卡片.webp"
+  },
+  {
+    "index": 9,
+    "alt": "09 Pair 公开档案 H5",
+    "file": "/demo2/09-09-Pair-公开档案-H5.webp"
+  },
+  {
+    "index": 10,
+    "alt": "10 人详情 Drawer",
+    "file": "/demo2/10-10-人详情-Drawer.webp"
+  },
+  {
+    "index": 11,
+    "alt": "11 People 页",
+    "file": "/demo2/11-11-People-页.webp"
+  },
+  {
+    "index": 12,
+    "alt": "12 Settings",
+    "file": "/demo2/12-12-Settings.webp"
+  },
+  {
+    "index": 13,
+    "alt": "13 会后反馈卡",
+    "file": "/demo2/13-13-会后反馈卡.webp"
+  },
+  {
+    "index": 14,
+    "alt": "14 空状态",
+    "file": "/demo2/14-14-空状态.webp"
+  },
+  {
+    "index": 15,
+    "alt": "15 错误态",
+    "file": "/demo2/15-15-错误态.webp"
+  }
+]

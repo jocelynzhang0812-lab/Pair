@@ -1,0 +1,59 @@
+# Pair · 生产环境变量（填入真实值后导入各平台）
+# 不要把真实值提交到 Git
+
+# ============================================================
+# 后端 API（apps/api）—— Render / Railway / Fly.io / ECS 通用
+# ============================================================
+NODE_ENV=production
+PORT=3000
+
+# 允许访问后端的域名列表，逗号分隔
+CORS_ORIGINS=https://pair-web.vercel.app,https://pairapp.cn
+
+# Web 公开页基础 URL，后端生成公开档案链接用
+WEB_PUBLIC_BASE_URL=https://pairapp.cn
+
+# PostgreSQL 连接字符串（示例为 Supabase / Render Postgres 格式）
+DATABASE_URL=postgresql://user:password@host:5432/pair?schema=public
+
+# Redis 连接字符串（示例为 Upstash / Render Redis 格式）
+REDIS_URL=rediss://user:password@host:6379
+
+# JWT 密钥，生产环境请用 openssl rand -hex 32 生成
+JWT_SECRET=
+JWT_EXPIRES_IN=7d
+
+# OpenAI / 中转 API
+OPENAI_API_KEY=sk-
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL_MINI=gpt-4o-mini
+OPENAI_MODEL_DIALOGUE=gpt-4o
+
+# 微信小程序登录
+WECHAT_APP_ID=
+WECHAT_APP_SECRET=
+
+# Google OAuth（可选）
+GOOGLE_OAUTH_CLIENT_ID=
+GOOGLE_OAUTH_CLIENT_SECRET=
+GOOGLE_OAUTH_REDIRECT_URI=https://api.pairapp.cn/auth/google/callback
+
+# 邮件服务（可选，用于通知）
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM=noreply@pairapp.cn
+
+# 网页内容抓取（可选）
+JINA_READER_BASE_URL=https://r.jina.ai/http://
+FIRECRAWL_API_KEY=
+
+# 限流
+THROTTLE_TTL=60
+THROTTLE_LIMIT=60
+
+# ============================================================
+# Web 前端（apps/web）—— Vercel
+# ============================================================
+NEXT_PUBLIC_API_BASE_URL=https://api.pairapp.cn
